@@ -1,24 +1,102 @@
-# Heroku::Review::Apps::Manager
+# heroku-review-apps-manager <a href="https://badge.fury.io/rb/heroku-review-apps-manager"><img src="https://badge.fury.io/rb/heroku-review-apps-manager.svg" alt="Gem Version" height="18"></a>
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/heroku/review/apps/manager`. To experiment with that code, run `bin/console` for an interactive prompt.
+A command-line tool to manage Heroku Review Apps. This gem provides an easy way to list, create, and delete Heroku review apps associated with GitHub pull requests.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Install the gem by executing:
 
-Install the gem and add to the application's Gemfile by executing:
+```bash
+$ gem install heroku-review-apps-manager
+```
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+Or add to your application's Gemfile:
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+```ruby
+gem 'heroku-review-apps-manager'
+```
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+And then execute:
+
+```bash
+$ bundle install
+```
+
+## Configuration
+
+This tool requires the following environment variables to be set:
+
+### `HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY`
+
+Your Heroku API key for authentication. You can find your API key in your [Heroku Account Settings](https://dashboard.heroku.com/account).
+
+```bash
+export HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY=your_heroku_api_key
+```
+
+### `HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN`
+
+Your GitHub personal access token (required for creating review apps). You can create a token in your [GitHub Settings](https://github.com/settings/tokens).
+
+```bash
+export HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN=your_github_token
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+### List review apps
+
+List all review apps for a given pipeline:
+
+```bash
+$ heroku-review-apps-manager list_app PIPELINE_NAME
+```
+
+With JSON output:
+
+```bash
+$ heroku-review-apps-manager list_app PIPELINE_NAME --json
+```
+
+### Create a review app
+
+Create a review app for a specific branch and pull request:
+
+```bash
+$ heroku-review-apps-manager create_app PIPELINE_NAME GITHUB_ORG REPOSITORY BRANCH
+```
+
+Example:
+
+```bash
+$ heroku-review-apps-manager create_app my-pipeline myorg myrepo feature-branch
+```
+
+With JSON output:
+
+```bash
+$ heroku-review-apps-manager create_app PIPELINE_NAME GITHUB_ORG REPOSITORY BRANCH --json
+```
+
+### Delete a review app
+
+Delete a review app for a specific branch:
+
+```bash
+$ heroku-review-apps-manager delete_app PIPELINE_NAME BRANCH
+```
+
+Example:
+
+```bash
+$ heroku-review-apps-manager delete_app my-pipeline feature-branch
+```
+
+With JSON output:
+
+```bash
+$ heroku-review-apps-manager delete_app PIPELINE_NAME BRANCH --json
+```
 
 ## Development
 
@@ -28,7 +106,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/heroku-review-apps-manager. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/heroku-review-apps-manager/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/kakudou3/heroku-review-apps-manager. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/kakudou3/heroku-review-apps-manager/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -36,4 +114,8 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Heroku::Review::Apps::Manager project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/heroku-review-apps-manager/blob/main/CODE_OF_CONDUCT.md).
+Everyone interacting in the heroku-review-apps-manager project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/kakudou3/heroku-review-apps-manager/blob/main/CODE_OF_CONDUCT.md).
+
+## Author
+
+kakudooo <kakudou3@gmail.com>

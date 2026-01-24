@@ -3,6 +3,7 @@
 require "securerandom"
 require "erb"
 
+# rubocop:disable Metrics/BlockLength
 RSpec.describe Heroku::Review::Apps::Manager::Cli do
   describe "#list_app" do
     let(:pipeline) { "sample-app" }
@@ -131,13 +132,13 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       end
 
       it "displays a deleted review app" do
-        expect { described_class.new.invoke(:delete_app, [pipeline, branch], { json: true }) }.to output({
+        expect { described_class.new.invoke(:delete_app, [pipeline, branch], { json: true }) }.to output("#{{
           "app" => {
             "id" => app_id,
             "branch" => branch,
             "pr_number" => pr_number
           }
-        }.to_json + "\n").to_stdout
+        }.to_json}\n").to_stdout
       end
     end
 
@@ -537,11 +538,12 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
             user: @uri.user,
             password: @uri.password
           }
-        }.to_json + "\n"
+        }.to_json
         expect do
           described_class.new.invoke(:create_app, [pipeline, org, repository, branch], { json: true })
-        end.to output(/#{result}/).to_stdout
+        end.to output(/#{result}\n/).to_stdout
       end
     end
   end
 end
+# rubocop:enable Metrics/BlockLength
