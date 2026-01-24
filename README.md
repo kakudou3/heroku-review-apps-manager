@@ -42,6 +42,14 @@ Your GitHub personal access token (required for creating review apps). You can c
 export HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN=your_github_token
 ```
 
+### `HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY` (Optional)
+
+The default GitHub repository in the format `org/repo` (e.g., `myorg/myrepo`). This is used as a fallback when the repository is not specified in the `create_app` command.
+
+```bash
+export HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY=myorg/myrepo
+```
+
 ## Usage
 
 ### List review apps
@@ -63,19 +71,27 @@ $ heroku-review-apps-manager list_app PIPELINE_NAME --json
 Create a review app for a specific branch and pull request:
 
 ```bash
-$ heroku-review-apps-manager create_app PIPELINE_NAME GITHUB_ORG REPOSITORY BRANCH
+$ heroku-review-apps-manager create_app PIPELINE_NAME BRANCH [REPOSITORY]
 ```
 
-Example:
+The `REPOSITORY` parameter is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY` environment variable. The repository should be in the format `org/repo`.
+
+Example with repository specified:
 
 ```bash
-$ heroku-review-apps-manager create_app my-pipeline myorg myrepo feature-branch
+$ heroku-review-apps-manager create_app my-pipeline feature-branch myorg/myrepo
+```
+
+Example using environment variable:
+
+```bash
+$ heroku-review-apps-manager create_app my-pipeline feature-branch
 ```
 
 With JSON output:
 
 ```bash
-$ heroku-review-apps-manager create_app PIPELINE_NAME GITHUB_ORG REPOSITORY BRANCH --json
+$ heroku-review-apps-manager create_app PIPELINE_NAME BRANCH [REPOSITORY] --json
 ```
 
 ### Delete a review app

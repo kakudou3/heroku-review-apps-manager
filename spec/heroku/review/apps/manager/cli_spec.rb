@@ -208,8 +208,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
     let(:heroku_api_token) { SecureRandom.hex(20) }
     let(:app_id) { SecureRandom.uuid }
     let(:pr_number) { 10 }
-    let(:org) { "sample" }
-    let(:repository) { "app" }
+    let(:repository) { "sample/app" }
 
     before do
       ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"] = heroku_api_token
@@ -218,6 +217,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
     context "when Review app exists" do
       before do
+        org = repository.split("/").first
         stub_request(
           :get,
           "https://api.heroku.com/pipelines/#{pipeline}"
@@ -234,14 +234,14 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
         stub_request(
           :head,
-          "https://api.github.com/repos/#{org}/#{repository}/tarball/#{ERB::Util.url_encode(branch)}"
+          "https://api.github.com/repos/#{repository}/tarball/#{ERB::Util.url_encode(branch)}"
         ).to_return(status: 302, headers: {
                       "Location" => "https://github-cloud.s3.amazonaws.com/fake.tar.gz"
                     })
 
         stub_request(
           :get,
-          "https://api.github.com/repos/#{org}/#{repository}/pulls"
+          "https://api.github.com/repos/#{repository}/pulls"
         ).with(
           query: {
             head: "#{org}:#{branch}",
@@ -273,7 +273,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:create_app, [pipeline, org, repository, branch], { json: true })
+          described_class.new.invoke(:create_app, [pipeline, branch, repository], { json: true })
         end.to output("Review app already exists.\n").to_stdout
       end
     end
@@ -283,6 +283,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
         "https://github-cloud.s3.amazonaws.com/fake.tar.gz"
       end
       before do
+        org = repository.split("/").first
         stub_request(
           :get,
           "https://api.heroku.com/pipelines/#{pipeline}"
@@ -299,14 +300,14 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
         stub_request(
           :head,
-          "https://api.github.com/repos/#{org}/#{repository}/tarball/#{ERB::Util.url_encode(branch)}"
+          "https://api.github.com/repos/#{repository}/tarball/#{ERB::Util.url_encode(branch)}"
         ).to_return(status: 302, headers: {
                       "Location" => source_blob_url
                     })
 
         stub_request(
           :get,
-          "https://api.github.com/repos/#{org}/#{repository}/pulls"
+          "https://api.github.com/repos/#{repository}/pulls"
         ).with(
           query: {
             head: "#{org}:#{branch}",
@@ -380,7 +381,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:create_app, [pipeline, org, repository, branch], { json: true })
+          described_class.new.invoke(:create_app, [pipeline, branch, repository], { json: true })
         end.to output(/Review app was changed to errored status\.\n?\z/).to_stdout
       end
     end
@@ -393,6 +394,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       let(:web_url) { "https://dummy.heroku.com" }
       let(:database_url) { "postgres://dummy_user:dummy_password@localhost:5432/dummy_db" }
       before do
+        org = repository.split("/").first
         stub_request(
           :get,
           "https://api.heroku.com/pipelines/#{pipeline}"
@@ -409,14 +411,14 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
         stub_request(
           :head,
-          "https://api.github.com/repos/#{org}/#{repository}/tarball/#{ERB::Util.url_encode(branch)}"
+          "https://api.github.com/repos/#{repository}/tarball/#{ERB::Util.url_encode(branch)}"
         ).to_return(status: 302, headers: {
                       "Location" => source_blob_url
                     })
 
         stub_request(
           :get,
-          "https://api.github.com/repos/#{org}/#{repository}/pulls"
+          "https://api.github.com/repos/#{repository}/pulls"
         ).with(
           query: {
             head: "#{org}:#{branch}",
@@ -540,7 +542,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
           }
         }.to_json
         expect do
-          described_class.new.invoke(:create_app, [pipeline, org, repository, branch], { json: true })
+          described_class.new.invoke(:create_app, [pipeline, branch, repository], { json: true })
         end.to output(/#{result}\n/).to_stdout
       end
     end
