@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    heroku-review-apps-manager (0.1.0)
+    heroku-review-apps-manager (0.2.0)
       faraday
       octokit
       platform-api
