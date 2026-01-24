@@ -30,12 +30,12 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "faraday", "~> 2.0"
-  spec.add_dependency "octokit", "~> 4.0"
-  spec.add_dependency "platform-api", "~> 3.0"
-  spec.add_dependency "thor", "~> 1.0"
+  spec.add_dependency "faraday"
+  spec.add_dependency "octokit"
+  spec.add_dependency "platform-api"
+  spec.add_dependency "thor"
 
-  spec.add_development_dependency "rake", "~> 13.0"
-  spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "rubocop", "~> 1.21"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "rubocop"
 end
