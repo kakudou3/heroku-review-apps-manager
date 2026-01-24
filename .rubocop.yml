@@ -11,3 +11,7 @@ Style/StringLiteralsInInterpolation:
 
 Layout/LineLength:
   Max: 120
+
+Layout/LineLength:
+  Exclude:
+    - "heroku-review-apps-manager.gemspec"

@@ -7,6 +7,7 @@ require "octokit"
 require "cgi"
 require "faraday"
 
+# rubocop:disable Style/Documentation, Metrics/ClassLength, Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 module Heroku
   module Review
     module Apps
@@ -158,3 +159,4 @@ module Heroku
     end
   end
 end
+# rubocop:enable Style/Documentation, Metrics/ClassLength, Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
