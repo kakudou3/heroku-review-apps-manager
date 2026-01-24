@@ -77,17 +77,19 @@ module Heroku
 
           desc "create_app", "Create review app"
           option :json, type: :boolean, default: false
-          def create_app(pipeline_name, org, repository, branch)
+          def create_app(pipeline_name, branch, repository = nil)
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
             octokit = Octokit::Client.new(access_token: ENV["HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN"])
+            repository ||= ENV["HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY"]
+            org = repository.split("/").first
 
             pipeline = platform_api.pipeline.info(pipeline_name)
             pipeline_id = pipeline["id"]
 
-            github_archive_link = octokit.archive_link("#{org}/#{repository}", ref: branch)
+            github_archive_link = octokit.archive_link(repository, ref: branch)
 
             pull_requests = octokit.pull_requests(
-              "#{org}/#{repository}",
+              repository,
               state: "all",
               head: "#{org}:#{branch}"
             )
