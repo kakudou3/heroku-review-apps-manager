@@ -13,9 +13,16 @@ module Heroku
     module Apps
       module Manager
         class Cli < Thor
+          class << self
+            def exit_on_failure?
+              true
+            end
+          end
+
           desc "list_app", "List all review apps"
           option :json, type: :boolean, default: false
-          def list_app(pipeline_name)
+          def list_app(pipeline_name = nil)
+            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
 
             begin
@@ -42,7 +49,8 @@ module Heroku
 
           desc "delete_app", "Delete review apps"
           option :json, type: :boolean, default: false
-          def delete_app(pipeline_name, branch)
+          def delete_app(branch, pipeline_name = nil)
+            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
 
             begin
@@ -77,9 +85,10 @@ module Heroku
 
           desc "create_app", "Create review app"
           option :json, type: :boolean, default: false
-          def create_app(pipeline_name, branch, repository = nil)
+          def create_app(branch, pipeline_name = nil, repository = nil)
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
             octokit = Octokit::Client.new(access_token: ENV["HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN"])
+            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
             repository ||= ENV["HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY"]
             org = repository.split("/").first
 

@@ -132,7 +132,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       end
 
       it "displays a deleted review app" do
-        expect { described_class.new.invoke(:delete_app, [pipeline, branch], { json: true }) }.to output("#{{
+        expect { described_class.new.invoke(:delete_app, [branch, pipeline], { json: true }) }.to output("#{{
           "app" => {
             "id" => app_id,
             "branch" => branch,
@@ -159,7 +159,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:delete_app, ["", branch], { json: true })
+          described_class.new.invoke(:delete_app, [branch, ""], { json: true })
         end.to output("Pipleline does not exists.\n").to_stdout
       end
     end
@@ -195,7 +195,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:delete_app, [pipeline, branch])
+          described_class.new.invoke(:delete_app, [branch, pipeline])
         end.to output("Review app not exists.\n").to_stdout
       end
     end
@@ -273,7 +273,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:create_app, [pipeline, branch, repository], { json: true })
+          described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
         end.to output("Review app already exists.\n").to_stdout
       end
     end
@@ -381,7 +381,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:create_app, [pipeline, branch, repository], { json: true })
+          described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
         end.to output(/Review app was changed to errored status\.\n?\z/).to_stdout
       end
     end
@@ -542,7 +542,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
           }
         }.to_json
         expect do
-          described_class.new.invoke(:create_app, [pipeline, branch, repository], { json: true })
+          described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
         end.to output(/#{result}\n/).to_stdout
       end
     end
