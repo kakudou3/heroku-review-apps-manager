@@ -42,6 +42,14 @@ Your GitHub personal access token (required for creating review apps). You can c
 export HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN=your_github_token
 ```
 
+### `HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME` (Optional)
+
+The default Heroku pipeline name. This is used as a fallback when the pipeline name is not specified in commands.
+
+```bash
+export HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME=my-pipeline
+```
+
 ### `HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY` (Optional)
 
 The default GitHub repository in the format `org/repo` (e.g., `myorg/myrepo`). This is used as a fallback when the repository is not specified in the `create_app` command.
@@ -57,13 +65,15 @@ export HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY=myorg/myrepo
 List all review apps for a given pipeline:
 
 ```bash
-$ heroku-review-apps-manager list_app PIPELINE_NAME
+$ heroku-review-apps-manager list_app [PIPELINE_NAME]
 ```
+
+The `PIPELINE_NAME` parameter is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME` environment variable.
 
 With JSON output:
 
 ```bash
-$ heroku-review-apps-manager list_app PIPELINE_NAME --json
+$ heroku-review-apps-manager list_app [PIPELINE_NAME] --json
 ```
 
 ### Create a review app
@@ -71,27 +81,29 @@ $ heroku-review-apps-manager list_app PIPELINE_NAME --json
 Create a review app for a specific branch and pull request:
 
 ```bash
-$ heroku-review-apps-manager create_app PIPELINE_NAME BRANCH [REPOSITORY]
+$ heroku-review-apps-manager create_app BRANCH [PIPELINE_NAME] [REPOSITORY]
 ```
+
+The `PIPELINE_NAME` parameter is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME` environment variable.
 
 The `REPOSITORY` parameter is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY` environment variable. The repository should be in the format `org/repo`.
 
-Example with repository specified:
+Example with all parameters specified:
 
 ```bash
-$ heroku-review-apps-manager create_app my-pipeline feature-branch myorg/myrepo
+$ heroku-review-apps-manager create_app feature-branch my-pipeline myorg/myrepo
 ```
 
-Example using environment variable:
+Example using environment variables:
 
 ```bash
-$ heroku-review-apps-manager create_app my-pipeline feature-branch
+$ heroku-review-apps-manager create_app feature-branch
 ```
 
 With JSON output:
 
 ```bash
-$ heroku-review-apps-manager create_app PIPELINE_NAME BRANCH [REPOSITORY] --json
+$ heroku-review-apps-manager create_app BRANCH [PIPELINE_NAME] [REPOSITORY] --json
 ```
 
 ### Delete a review app
@@ -99,19 +111,27 @@ $ heroku-review-apps-manager create_app PIPELINE_NAME BRANCH [REPOSITORY] --json
 Delete a review app for a specific branch:
 
 ```bash
-$ heroku-review-apps-manager delete_app PIPELINE_NAME BRANCH
+$ heroku-review-apps-manager delete_app BRANCH [PIPELINE_NAME]
 ```
 
-Example:
+The `PIPELINE_NAME` parameter is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME` environment variable.
+
+Example with pipeline name specified:
 
 ```bash
-$ heroku-review-apps-manager delete_app my-pipeline feature-branch
+$ heroku-review-apps-manager delete_app feature-branch my-pipeline
+```
+
+Example using environment variable:
+
+```bash
+$ heroku-review-apps-manager delete_app feature-branch
 ```
 
 With JSON output:
 
 ```bash
-$ heroku-review-apps-manager delete_app PIPELINE_NAME BRANCH --json
+$ heroku-review-apps-manager delete_app BRANCH [PIPELINE_NAME] --json
 ```
 
 ## Development
