@@ -47,7 +47,7 @@ module Heroku
             end
           end
 
-          desc "delete_app", "Delete review apps"
+          desc "delete_app", "Delete review app"
           option :json, type: :boolean, default: false
           def delete_app(branch, pipeline_name = nil)
             pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
