@@ -28,13 +28,13 @@ module Heroku
             begin
               pipeline = platform_api.pipeline.info(pipeline_name)
             rescue Excon::Error::NotFound
-              say "Pipleline does not exists." and return
+              say "Pipleline does not exists.", Thor::Shell::Color::RED and return
             end
 
             result = platform_api.review_app.list(pipeline["id"])
 
             if options[:json]
-              say result.to_json
+              output_as_json(result)
             else
               headers = %w[ID PR Branch Status]
               body = result.map do |app|
@@ -47,7 +47,7 @@ module Heroku
             end
           end
 
-          desc "delete_app", "Delete review apps"
+          desc "delete_app", "Delete review app"
           option :json, type: :boolean, default: false
           def delete_app(branch, pipeline_name = nil)
             pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
@@ -56,23 +56,23 @@ module Heroku
             begin
               pipeline = platform_api.pipeline.info(pipeline_name)
             rescue Excon::Error::NotFound
-              say "Pipleline does not exists." and return
+              say "Pipleline does not exists.", Thor::Shell::Color::RED and return
             end
 
             begin
               apps = platform_api.review_app.list(pipeline["id"])
             rescue Excon::Error::NotFound
-              say "Review app not exists." and return
+              say "Review app not exists.", Thor::Shell::Color::RED and return
             end
 
             app = apps.filter { |app| app["branch"] == branch }.first
 
-            say "Review app not exists." and return if app.nil?
+            say "Review app not exists.", Thor::Shell::Color::RED and return if app.nil?
 
             result = platform_api.review_app.delete(app["id"])
 
             if options[:json]
-              say result.to_json
+              output_as_json(result)
             else
               headers = %w[ID PR Branch]
               body = [result["id"], "##{result["pr_number"]}", result["branch"]]
@@ -107,7 +107,7 @@ module Heroku
             apps = platform_api.review_app.list(pipeline_id)
             app = apps.filter { |app| app["branch"] == branch }.first
 
-            say "Review app already exists." and return unless app.nil?
+            say "Review app already exists.", Thor::Shell::Color::YELLOW and return unless app.nil?
 
             begin
               review_app = platform_api.review_app.create(
@@ -117,24 +117,28 @@ module Heroku
                 pr_number: pull_request[:number]
               )
             rescue Excon::Error::Conflict
-              say "Review app already exists." and return
+              say "Review app already exists.", Thor::Shell::Color::YELLOW and return
             end
 
             last_status = nil
             loop do
               review_app = platform_api.review_app.get_review_app(review_app["id"])
 
-              say "Status: #{review_app["status"]}"
-
               if %w[created errored].include?(review_app["status"])
                 last_status = review_app["status"]
+                say "\rStatus: #{review_app["status"]}", Thor::Shell::Color::WHITE
                 break
+              else
+                say "\rStatus: #{review_app["status"]}", Thor::Shell::Color::WHITE, false
               end
 
               sleep 30
             end
 
-            say "Review app was changed to errored status." and return if last_status == "errored"
+            if last_status == "errored"
+              say "Review app was changed to errored status.",
+                  Thor::Shell::Color::RED and return
+            end
 
             app_id = review_app["app"]["id"]
             app_info = platform_api.app.info(app_id)
@@ -154,7 +158,7 @@ module Heroku
                   password: uri.password
                 }
               }
-              say result.to_json
+              output_as_json(result)
             else
               print_table([
                             ["URL", "DB Host", "DB Port", "DB Name", "DB User",
@@ -164,6 +168,12 @@ module Heroku
                           ])
 
             end
+          end
+
+          private
+
+          def output_as_json(result)
+            $stdout.puts result.to_json
           end
         end
       end
