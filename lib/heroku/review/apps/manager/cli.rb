@@ -61,8 +61,8 @@ module Heroku
 
             begin
               apps = platform_api.review_app.list(pipeline["id"])
-            rescue Excon::Error::NotFound, Thor::Shell::Color::RED
-              say "Review app not exists." and return
+            rescue Excon::Error::NotFound
+              say "Review app not exists.", Thor::Shell::Color::RED and return
             end
 
             app = apps.filter { |app| app["branch"] == branch }.first
