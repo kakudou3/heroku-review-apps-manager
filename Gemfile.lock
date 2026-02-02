@@ -6,6 +6,7 @@ PATH
       octokit
       platform-api
       thor
+      whirly
 
 GEM
   remote: https://rubygems.org/
@@ -104,6 +105,9 @@ GEM
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.9.2)
+    whirly (0.4.0)
+      json
+      unicode-display_width (>= 1.1)
 
 PLATFORMS
   ruby

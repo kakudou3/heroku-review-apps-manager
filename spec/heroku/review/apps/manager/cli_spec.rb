@@ -63,7 +63,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:list_app, [""], { json: true })
-        end.to output("Pipleline does not exists.\n").to_stdout
+        end.to output("\e[31mPipleline does not exists.\e[0m\n").to_stderr
       end
     end
   end
@@ -160,7 +160,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:delete_app, [branch, ""], { json: true })
-        end.to output("Pipleline does not exists.\n").to_stdout
+        end.to output("\e[31mPipleline does not exists.\e[0m\n").to_stderr
       end
     end
 
@@ -196,7 +196,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:delete_app, [branch, pipeline])
-        end.to output("Review app not exists.\n").to_stdout
+        end.to output("\e[31mReview app not exists.\e[0m\n").to_stderr
       end
     end
   end
@@ -274,7 +274,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
-        end.to output("Review app already exists.\n").to_stdout
+        end.to output("\e[33mReview app already exists.\e[0m\n").to_stderr
       end
     end
 
@@ -382,7 +382,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
-        end.to output(/Review app was changed to errored status\.\n?\z/).to_stdout
+        end.to output("\e[31mReview app was changed to errored status.\e[0m\n").to_stderr
       end
     end
 
@@ -528,6 +528,14 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
           }.to_json
         )
         @uri = URI.parse(database_url)
+
+        allow(Whirly).to receive(:configure)
+        allow(Whirly).to receive(:start) do |*_args, &block|
+          block&.call
+          nil
+        end
+        allow(Whirly).to receive(:stop)
+        allow(Whirly).to receive(:status=)
       end
 
       it "displays application info" do
