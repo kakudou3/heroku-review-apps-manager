@@ -6,6 +6,7 @@ require "platform-api"
 require "octokit"
 require "cgi"
 require "faraday"
+require "whirly"
 
 # rubocop:disable Style/Documentation, Metrics/ClassLength, Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 module Heroku
@@ -28,7 +29,7 @@ module Heroku
             begin
               pipeline = platform_api.pipeline.info(pipeline_name)
             rescue Excon::Error::NotFound
-              say "Pipleline does not exists.", Thor::Shell::Color::RED and return
+              say_error "Pipleline does not exists.", Thor::Shell::Color::RED and return
             end
 
             result = platform_api.review_app.list(pipeline["id"])
@@ -56,18 +57,18 @@ module Heroku
             begin
               pipeline = platform_api.pipeline.info(pipeline_name)
             rescue Excon::Error::NotFound
-              say "Pipleline does not exists.", Thor::Shell::Color::RED and return
+              say_error "Pipleline does not exists.", Thor::Shell::Color::RED and return
             end
 
             begin
               apps = platform_api.review_app.list(pipeline["id"])
             rescue Excon::Error::NotFound
-              say "Review app not exists.", Thor::Shell::Color::RED and return
+              say_error "Review app not exists.", Thor::Shell::Color::RED and return
             end
 
             app = apps.filter { |app| app["branch"] == branch }.first
 
-            say "Review app not exists.", Thor::Shell::Color::RED and return if app.nil?
+            say_error "Review app not exists.", Thor::Shell::Color::RED and return if app.nil?
 
             result = platform_api.review_app.delete(app["id"])
 
@@ -86,6 +87,8 @@ module Heroku
           desc "create_app", "Create review app"
           option :json, type: :boolean, default: false
           def create_app(branch, pipeline_name = nil, repository = nil)
+            Whirly.configure(spinner: "dots", stream: $stderr)
+
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
             octokit = Octokit::Client.new(access_token: ENV["HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN"])
             pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
@@ -107,7 +110,7 @@ module Heroku
             apps = platform_api.review_app.list(pipeline_id)
             app = apps.filter { |app| app["branch"] == branch }.first
 
-            say "Review app already exists.", Thor::Shell::Color::YELLOW and return unless app.nil?
+            say_error "Review app already exists.", Thor::Shell::Color::YELLOW and return unless app.nil?
 
             begin
               review_app = platform_api.review_app.create(
@@ -117,27 +120,32 @@ module Heroku
                 pr_number: pull_request[:number]
               )
             rescue Excon::Error::Conflict
-              say "Review app already exists.", Thor::Shell::Color::YELLOW and return
+              say_error "Review app already exists.", Thor::Shell::Color::YELLOW and return
             end
 
             last_status = nil
-            loop do
-              review_app = platform_api.review_app.get_review_app(review_app["id"])
+            Whirly.start
+            begin
+              loop do
+                review_app = platform_api.review_app.get_review_app(review_app["id"])
 
-              if %w[created errored].include?(review_app["status"])
-                last_status = review_app["status"]
-                say "\rStatus: #{review_app["status"]}", Thor::Shell::Color::WHITE
-                break
-              else
-                say "\rStatus: #{review_app["status"]}", Thor::Shell::Color::WHITE, false
+                if %w[created errored].include?(review_app["status"])
+                  last_status = review_app["status"]
+                  Whirly.status = "Status: #{review_app["status"]}"
+                  break
+                else
+                  Whirly.status = "Status: #{review_app["status"]}"
+                end
+
+                sleep 30
               end
-
-              sleep 30
+            ensure
+              Whirly.stop
             end
 
             if last_status == "errored"
-              say "Review app was changed to errored status.",
-                  Thor::Shell::Color::RED and return
+              say_error "Review app was changed to errored status.",
+                        Thor::Shell::Color::RED and return
             end
 
             app_id = review_app["app"]["id"]

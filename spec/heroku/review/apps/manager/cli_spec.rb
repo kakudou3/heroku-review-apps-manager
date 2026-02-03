@@ -11,6 +11,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
     let(:app_id) { SecureRandom.uuid }
 
     before do
+      ENV["NO_COLOR"] = "true"
       ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"] = heroku_api_token
     end
 
@@ -63,7 +64,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:list_app, [""], { json: true })
-        end.to output("Pipleline does not exists.\n").to_stdout
+        end.to output("Pipleline does not exists.\n").to_stderr
       end
     end
   end
@@ -160,7 +161,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:delete_app, [branch, ""], { json: true })
-        end.to output("Pipleline does not exists.\n").to_stdout
+        end.to output("Pipleline does not exists.\n").to_stderr
       end
     end
 
@@ -196,7 +197,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:delete_app, [branch, pipeline])
-        end.to output("Review app not exists.\n").to_stdout
+        end.to output("Review app not exists.\n").to_stderr
       end
     end
   end
@@ -274,7 +275,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
-        end.to output("Review app already exists.\n").to_stdout
+        end.to output("Review app already exists.\n").to_stderr
       end
     end
 
@@ -382,7 +383,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays a error message" do
         expect do
           described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
-        end.to output(/Review app was changed to errored status\.\n?\z/).to_stdout
+        end.to output("Review app was changed to errored status.\n").to_stderr
       end
     end
 
@@ -528,6 +529,14 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
           }.to_json
         )
         @uri = URI.parse(database_url)
+
+        allow(Whirly).to receive(:configure)
+        allow(Whirly).to receive(:start) do |*_args, &block|
+          block&.call
+          nil
+        end
+        allow(Whirly).to receive(:stop)
+        allow(Whirly).to receive(:status=)
       end
 
       it "displays application info" do

@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "octokit"
   spec.add_dependency "platform-api"
   spec.add_dependency "thor"
+  spec.add_dependency "whirly"
 
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
