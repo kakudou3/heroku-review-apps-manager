@@ -20,7 +20,7 @@ module Heroku
             end
           end
 
-          desc "list_app", "List all review apps"
+          desc "list-app", "List all review apps"
           option :json, type: :boolean, default: false
           def list_app(pipeline_name = nil)
             pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
@@ -48,7 +48,7 @@ module Heroku
             end
           end
 
-          desc "delete_app", "Delete review app"
+          desc "delete-app", "Delete review app"
           option :json, type: :boolean, default: false
           def delete_app(branch, pipeline_name = nil)
             pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
@@ -84,7 +84,7 @@ module Heroku
             end
           end
 
-          desc "create_app", "Create review app"
+          desc "create-app", "Create review app"
           option :json, type: :boolean, default: false
           def create_app(branch, pipeline_name = nil, repository = nil)
             Whirly.configure(spinner: "dots", stream: $stderr)
