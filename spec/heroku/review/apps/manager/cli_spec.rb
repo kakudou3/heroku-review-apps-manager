@@ -392,7 +392,8 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
         "https://github-cloud.s3.amazonaws.com/fake.tar.gz"
       end
       let(:pipeline_app_id) { SecureRandom.uuid }
-      let(:web_url) { "https://dummy.heroku.com" }
+      let(:app_name) { "dummy" }
+      let(:web_url) { "https://#{app_name}.heroku.com" }
       let(:database_url) { "postgres://dummy_user:dummy_password@localhost:5432/dummy_db" }
       before do
         org = repository.split("/").first
@@ -507,6 +508,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
             "Content-Type" => "application/json"
           },
           body: {
+            name: app_name,
             web_url: web_url
           }.to_json
         )
@@ -542,6 +544,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "displays application info" do
         result = {
           url: web_url,
+          name: app_name,
           db: {
             host: @uri.host,
             port: @uri.port,

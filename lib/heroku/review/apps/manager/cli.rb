@@ -158,6 +158,7 @@ module Heroku
             if options[:json]
               result = {
                 url: app_info["web_url"],
+                name: app_info["name"],
                 db: {
                   host: uri.host,
                   port: uri.port,
@@ -169,9 +170,9 @@ module Heroku
               output_as_json(result)
             else
               print_table([
-                            ["URL", "DB Host", "DB Port", "DB Name", "DB User",
+                            ["URL", "Name", "DB Host", "DB Port", "DB Name", "DB User",
                              "DB Password", "DB Scheme"],
-                            [app_info["web_url"], uri.host, uri.port, uri.path[1..], uri.user, uri.password,
+                            [app_info["web_url"], app_info["name"], uri.host, uri.port, uri.path[1..], uri.user, uri.password,
                              uri.scheme]
                           ])
 
