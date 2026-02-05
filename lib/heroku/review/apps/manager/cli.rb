@@ -172,8 +172,10 @@ module Heroku
               print_table([
                             ["URL", "Name", "DB Host", "DB Port", "DB Name", "DB User",
                              "DB Password", "DB Scheme"],
-                            [app_info["web_url"], app_info["name"], uri.host, uri.port, uri.path[1..], uri.user, uri.password,
-                             uri.scheme]
+                            [
+                              app_info["web_url"], app_info["name"], uri.host, uri.port, uri.path[1..], uri.user,
+                              uri.password, uri.scheme
+                            ]
                           ])
 
             end
