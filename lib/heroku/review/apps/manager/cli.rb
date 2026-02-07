@@ -20,7 +20,7 @@ module Heroku
             end
           end
 
-          desc "list_app", "List all review apps"
+          desc "list-app", "List all review apps"
           option :json, type: :boolean, default: false
           def list_app(pipeline_name = nil)
             pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
@@ -48,7 +48,7 @@ module Heroku
             end
           end
 
-          desc "delete_app", "Delete review app"
+          desc "delete-app", "Delete review app"
           option :json, type: :boolean, default: false
           def delete_app(branch, pipeline_name = nil)
             pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
@@ -84,7 +84,7 @@ module Heroku
             end
           end
 
-          desc "create_app", "Create review app"
+          desc "create-app", "Create review app"
           option :json, type: :boolean, default: false
           def create_app(branch, pipeline_name = nil, repository = nil)
             Whirly.configure(spinner: "dots", stream: $stderr)
@@ -158,6 +158,7 @@ module Heroku
             if options[:json]
               result = {
                 url: app_info["web_url"],
+                name: app_info["name"],
                 db: {
                   host: uri.host,
                   port: uri.port,
@@ -169,10 +170,12 @@ module Heroku
               output_as_json(result)
             else
               print_table([
-                            ["URL", "DB Host", "DB Port", "DB Name", "DB User",
+                            ["URL", "Name", "DB Host", "DB Port", "DB Name", "DB User",
                              "DB Password", "DB Scheme"],
-                            [app_info["web_url"], uri.host, uri.port, uri.path[1..], uri.user, uri.password,
-                             uri.scheme]
+                            [
+                              app_info["web_url"], app_info["name"], uri.host, uri.port, uri.path[1..], uri.user,
+                              uri.password, uri.scheme
+                            ]
                           ])
 
             end
