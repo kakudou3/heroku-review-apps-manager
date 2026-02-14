@@ -106,6 +106,22 @@ With JSON output:
 $ heroku-review-apps-manager create-app BRANCH [PIPELINE_NAME] [REPOSITORY] --json
 ```
 
+### List review app formations
+
+List formation info for a review app by branch:
+
+```bash
+$ heroku-review-apps-manager list-formation BRANCH [PIPELINE_NAME]
+```
+
+The `PIPELINE_NAME` parameter is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME` environment variable.
+
+With JSON output:
+
+```bash
+$ heroku-review-apps-manager list-formation BRANCH [PIPELINE_NAME] --json
+```
+
 ### Delete a review app
 
 Delete a review app for a specific branch:
