@@ -181,6 +181,56 @@ module Heroku
             end
           end
 
+          desc "list-formation", "List review app formation by branch"
+          option :json, type: :boolean, default: false
+          def list_formation(branch, pipeline_name = nil)
+            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+            platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
+
+            begin
+              pipeline = platform_api.pipeline.info(pipeline_name)
+            rescue Excon::Error::NotFound
+              say_error "Pipleline does not exists.", Thor::Shell::Color::RED and return
+            end
+
+            begin
+              apps = platform_api.review_app.list(pipeline["id"])
+            rescue Excon::Error::NotFound
+              say_error "Review app not exists.", Thor::Shell::Color::RED and return
+            end
+
+            app = apps.filter { |app| app["branch"] == branch }.first
+            say_error "Review app not exists.", Thor::Shell::Color::RED and return if app.nil?
+
+            app_id = app.dig("app", "id")
+            say_error "Review app not exists.", Thor::Shell::Color::RED and return if app_id.nil?
+
+            begin
+              formations = platform_api.formation.list(app_id)
+            rescue Excon::Error::NotFound
+              say_error "Formation not exists.", Thor::Shell::Color::RED and return
+            end
+
+            if options[:json]
+              output_as_json(formations)
+            else
+              headers = %w[ID Type Size Quantity State]
+              body = formations.map do |formation|
+                [
+                  formation["id"],
+                  formation["type"],
+                  formation["size"],
+                  formation["quantity"],
+                  formation["state"]
+                ]
+              end
+              print_table([
+                            headers,
+                            *body
+                          ])
+            end
+          end
+
           private
 
           def output_as_json(result)
