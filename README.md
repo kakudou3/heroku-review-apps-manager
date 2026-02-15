@@ -122,6 +122,30 @@ With JSON output:
 $ heroku-review-apps-manager list-formation BRANCH [PIPELINE_NAME] --json
 ```
 
+### Update review app formation quantity
+
+Update formation quantity (default process type is `web`) for a review app by branch:
+
+```bash
+$ heroku-review-apps-manager update-formation BRANCH [PIPELINE_NAME] --quantity QUANTITY
+```
+
+The `PIPELINE_NAME` parameter is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME` environment variable.
+The `--formation-type` option is optional. If not provided, it defaults to `web`.
+The `--quantity` option is optional. If not provided, it defaults to `1`.
+
+With JSON output:
+
+```bash
+$ heroku-review-apps-manager update-formation BRANCH [PIPELINE_NAME] --quantity QUANTITY --json
+```
+
+Specify formation type:
+
+```bash
+$ heroku-review-apps-manager update-formation BRANCH [PIPELINE_NAME] --quantity QUANTITY --formation-type worker
+```
+
 ### Delete a review app
 
 Delete a review app for a specific branch:
