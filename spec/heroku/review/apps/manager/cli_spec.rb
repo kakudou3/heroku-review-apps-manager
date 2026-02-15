@@ -699,5 +699,241 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       end
     end
   end
+
+  describe "#update_formation" do
+    let(:pipeline) { "sample-app" }
+    let(:branch) { "feature/add-sample" }
+    let(:quantity) { 2 }
+    let(:formation_type) { "web" }
+    let(:heroku_api_token) { SecureRandom.hex(20) }
+    let(:pipeline_id) { SecureRandom.uuid }
+    let(:app_id) { SecureRandom.uuid }
+    let(:formation_id) { SecureRandom.uuid }
+
+    before do
+      ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"] = heroku_api_token
+    end
+
+    context "when review app exists" do
+      before do
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: {
+                      "id" => pipeline_id
+                    }.to_json)
+
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline_id}/review-apps"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: [
+                      {
+                        "branch" => branch,
+                        "app" => {
+                          "id" => app_id
+                        }
+                      }
+                    ].to_json)
+
+        stub_request(
+          :patch,
+          "https://api.heroku.com/apps/#{app_id}/formation/#{formation_type}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}",
+            "Content-Type" => "application/json"
+          },
+          body: {
+            quantity: quantity
+          }.to_json
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: {
+                      "id" => formation_id,
+                      "type" => formation_type,
+                      "size" => "standard-1x",
+                      "quantity" => quantity,
+                      "state" => "up"
+                    }.to_json)
+      end
+
+      it "updates formation info" do
+        expect do
+          described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, quantity: quantity })
+        end.to output("#{{
+          "id" => formation_id,
+          "type" => formation_type,
+          "size" => "standard-1x",
+          "quantity" => quantity,
+          "state" => "up"
+        }.to_json}\n").to_stdout
+      end
+
+      context "when quantity is omitted and provided by option default" do
+        let(:quantity) { 1 }
+
+        it "updates formation with default quantity 1" do
+          expect do
+            described_class.new.invoke(:update_formation, [branch, pipeline], { json: true })
+          end.to output("#{{
+            "id" => formation_id,
+            "type" => formation_type,
+            "size" => "standard-1x",
+            "quantity" => quantity,
+            "state" => "up"
+          }.to_json}\n").to_stdout
+        end
+      end
+
+      context "when formation type is specified" do
+        let(:formation_type) { "worker" }
+
+        it "updates specified formation type" do
+          expect do
+            described_class.new.invoke(:update_formation, [branch, pipeline],
+                                       { json: true, formation_type: formation_type, quantity: quantity })
+          end.to output("#{{
+            "id" => formation_id,
+            "type" => formation_type,
+            "size" => "standard-1x",
+            "quantity" => quantity,
+            "state" => "up"
+          }.to_json}\n").to_stdout
+        end
+      end
+    end
+
+    context "when pipeline does not exist" do
+      before do
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 404, headers: {
+                      "Content-Type" => "application/json"
+                    })
+      end
+
+      it "displays a error message" do
+        expect do
+          described_class.new.invoke(:update_formation, [branch, ""], { json: true, quantity: quantity })
+        end.to output("Pipleline does not exists.\n").to_stderr
+      end
+    end
+
+    context "when review app does not exist" do
+      before do
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: {
+                      "id" => pipeline_id
+                    }.to_json)
+
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline_id}/review-apps"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: [].to_json)
+      end
+
+      it "displays a error message" do
+        expect do
+          described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, quantity: quantity })
+        end.to output("Review app not exists.\n").to_stderr
+      end
+    end
+
+    context "when formation does not exist" do
+      before do
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: {
+                      "id" => pipeline_id
+                    }.to_json)
+
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline_id}/review-apps"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: [
+                      {
+                        "branch" => branch,
+                        "app" => {
+                          "id" => app_id
+                        }
+                      }
+                    ].to_json)
+
+        stub_request(
+          :patch,
+          "https://api.heroku.com/apps/#{app_id}/formation/#{formation_type}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}",
+            "Content-Type" => "application/json"
+          },
+          body: {
+            quantity: quantity
+          }.to_json
+        ).to_return(status: 404, headers: {
+                      "Content-Type" => "application/json"
+                    })
+      end
+
+      it "displays a error message" do
+        expect do
+          described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, quantity: quantity })
+        end.to output("Formation not exists.\n").to_stderr
+      end
+    end
+  end
 end
 # rubocop:enable Metrics/BlockLength

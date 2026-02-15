@@ -231,6 +231,57 @@ module Heroku
             end
           end
 
+          desc "update-formation", "Update review app formation quantity by branch"
+          option :json, type: :boolean, default: false
+          option :formation_type, type: :string, default: "web"
+          option :quantity, type: :numeric, default: 1
+          def update_formation(branch, pipeline_name = nil)
+            quantity = options[:quantity]
+            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+            platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
+
+            begin
+              pipeline = platform_api.pipeline.info(pipeline_name)
+            rescue Excon::Error::NotFound
+              say_error "Pipleline does not exists.", Thor::Shell::Color::RED and return
+            end
+
+            begin
+              apps = platform_api.review_app.list(pipeline["id"])
+            rescue Excon::Error::NotFound
+              say_error "Review app not exists.", Thor::Shell::Color::RED and return
+            end
+
+            app = apps.filter { |app| app["branch"] == branch }.first
+            say_error "Review app not exists.", Thor::Shell::Color::RED and return if app.nil?
+
+            app_id = app.dig("app", "id")
+            say_error "Review app not exists.", Thor::Shell::Color::RED and return if app_id.nil?
+
+            begin
+              formation = platform_api.formation.update(app_id, options[:formation_type], { quantity: quantity.to_i })
+            rescue Excon::Error::NotFound
+              say_error "Formation not exists.", Thor::Shell::Color::RED and return
+            end
+
+            if options[:json]
+              output_as_json(formation)
+            else
+              headers = %w[ID Type Size Quantity State]
+              body = [
+                formation["id"],
+                formation["type"],
+                formation["size"],
+                formation["quantity"],
+                formation["state"]
+              ]
+              print_table([
+                            headers,
+                            body
+                          ])
+            end
+          end
+
           private
 
           def output_as_json(result)
