@@ -775,13 +775,13 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       it "updates formation info" do
         expect do
           described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, quantity: quantity })
-        end.to output({
+        end.to output("#{{
           "id" => formation_id,
           "type" => formation_type,
           "size" => "standard-1x",
           "quantity" => quantity,
           "state" => "up"
-        }.to_json + "\n").to_stdout
+        }.to_json}\n").to_stdout
       end
 
       context "when quantity is omitted and provided by option default" do
@@ -790,13 +790,13 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
         it "updates formation with default quantity 1" do
           expect do
             described_class.new.invoke(:update_formation, [branch, pipeline], { json: true })
-          end.to output({
+          end.to output("#{{
             "id" => formation_id,
             "type" => formation_type,
             "size" => "standard-1x",
             "quantity" => quantity,
             "state" => "up"
-          }.to_json + "\n").to_stdout
+          }.to_json}\n").to_stdout
         end
       end
 
@@ -805,14 +805,15 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
         it "updates specified formation type" do
           expect do
-            described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, formation_type: formation_type, quantity: quantity })
-          end.to output({
+            described_class.new.invoke(:update_formation, [branch, pipeline],
+                                       { json: true, formation_type: formation_type, quantity: quantity })
+          end.to output("#{{
             "id" => formation_id,
             "type" => formation_type,
             "size" => "standard-1x",
             "quantity" => quantity,
             "state" => "up"
-          }.to_json + "\n").to_stdout
+          }.to_json}\n").to_stdout
         end
       end
     end
