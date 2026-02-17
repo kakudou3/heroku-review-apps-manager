@@ -36,7 +36,12 @@ export HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY=your_heroku_api_key
 
 ### `HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN`
 
-Your GitHub personal access token (required for creating review apps). You can create a token in your [GitHub Settings](https://github.com/settings/tokens).
+Your GitHub personal access token (required for creating review apps). You can create a token in your [GitHub Settings](https://github.com/settings/personal-access-tokens).
+
+This tool requires the following repository permissions:
+
+- [Contents: Read and write](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#repository-permissions-for-contents)
+- [Pull requests: Read-only](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#repository-permissions-for-pull-requests)
 
 ```bash
 export HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN=your_github_token
