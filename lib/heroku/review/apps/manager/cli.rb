@@ -21,9 +21,10 @@ module Heroku
           end
 
           desc "list-app", "List all review apps"
+          option :pipeline, type: :string, aliases: :p, default: ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
           option :json, type: :boolean, default: false
-          def list_app(pipeline_name = nil)
-            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+          def list_app
+            pipeline_name = options[:pipeline]
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
 
             begin
@@ -49,9 +50,12 @@ module Heroku
           end
 
           desc "delete-app", "Delete review app"
+          option :branch, type: :string, aliases: :b, required: true
+          option :pipeline, type: :string, aliases: :p, default: ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
           option :json, type: :boolean, default: false
-          def delete_app(branch, pipeline_name = nil)
-            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+          def delete_app
+            branch = options[:branch]
+            pipeline_name = options[:pipeline]
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
 
             begin
@@ -85,14 +89,19 @@ module Heroku
           end
 
           desc "create-app", "Create review app"
+          option :branch, type: :string, aliases: :b, required: true
+          option :pipeline, type: :string, aliases: :p, default: ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+          option :repository, type: :string, aliases: :r,
+                              default: ENV["HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY"]
           option :json, type: :boolean, default: false
-          def create_app(branch, pipeline_name = nil, repository = nil)
+          def create_app
             Whirly.configure(spinner: "dots", stream: $stderr)
 
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
             octokit = Octokit::Client.new(access_token: ENV["HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN"])
-            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
-            repository ||= ENV["HEROKU_REVIEW_APPS_MANAGER_TARGET_GITHUB_REPOSITORY"]
+            branch = options[:branch]
+            pipeline_name = options[:pipeline]
+            repository = options[:repository]
             org = repository.split("/").first
 
             pipeline = platform_api.pipeline.info(pipeline_name)
@@ -182,9 +191,12 @@ module Heroku
           end
 
           desc "list-formation", "List review app formation by branch"
+          option :branch, type: :string, aliases: :b, required: true
+          option :pipeline, type: :string, aliases: :p, default: ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
           option :json, type: :boolean, default: false
-          def list_formation(branch, pipeline_name = nil)
-            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+          def list_formation
+            branch = options[:branch]
+            pipeline_name = options[:pipeline]
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
 
             begin
@@ -232,12 +244,15 @@ module Heroku
           end
 
           desc "update-formation", "Update review app formation quantity by branch"
+          option :branch, type: :string, aliases: :b, required: true
+          option :pipeline, type: :string, aliases: :p, default: ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
           option :json, type: :boolean, default: false
           option :formation_type, type: :string, default: "web"
           option :quantity, type: :numeric, default: 1
-          def update_formation(branch, pipeline_name = nil)
+          def update_formation
+            branch = options[:branch]
             quantity = options[:quantity]
-            pipeline_name ||= ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+            pipeline_name = options[:pipeline]
             platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
 
             begin

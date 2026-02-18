@@ -44,7 +44,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays review apps" do
         expect do
-          described_class.new.invoke(:list_app, [pipeline], { json: true })
+          described_class.new.invoke(:list_app, [], { pipeline: pipeline, json: true })
         end.to output("#{[{ "app" => { "id" => app_id } }].to_json}\n").to_stdout
       end
     end
@@ -63,7 +63,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:list_app, [""], { json: true })
+          described_class.new.invoke(:list_app, [], { pipeline: "", json: true })
         end.to output("Pipleline does not exists.\n").to_stderr
       end
     end
@@ -133,7 +133,9 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       end
 
       it "displays a deleted review app" do
-        expect { described_class.new.invoke(:delete_app, [branch, pipeline], { json: true }) }.to output("#{{
+        expect do
+          described_class.new.invoke(:delete_app, [], { branch: branch, pipeline: pipeline, json: true })
+        end.to output("#{{
           "app" => {
             "id" => app_id,
             "branch" => branch,
@@ -160,7 +162,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:delete_app, [branch, ""], { json: true })
+          described_class.new.invoke(:delete_app, [], { branch: branch, pipeline: "", json: true })
         end.to output("Pipleline does not exists.\n").to_stderr
       end
     end
@@ -196,7 +198,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:delete_app, [branch, pipeline])
+          described_class.new.invoke(:delete_app, [], { branch: branch, pipeline: pipeline })
         end.to output("Review app not exists.\n").to_stderr
       end
     end
@@ -274,7 +276,8 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
+          described_class.new.invoke(:create_app, [],
+                                     { branch: branch, pipeline: pipeline, repository: repository, json: true })
         end.to output("Review app already exists.\n").to_stderr
       end
     end
@@ -382,7 +385,8 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
+          described_class.new.invoke(:create_app, [],
+                                     { branch: branch, pipeline: pipeline, repository: repository, json: true })
         end.to output("Review app was changed to errored status.\n").to_stderr
       end
     end
@@ -554,7 +558,8 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
           }
         }.to_json
         expect do
-          described_class.new.invoke(:create_app, [branch, pipeline, repository], { json: true })
+          described_class.new.invoke(:create_app, [],
+                                     { branch: branch, pipeline: pipeline, repository: repository, json: true })
         end.to output(/#{result}\n/).to_stdout
       end
     end
@@ -630,7 +635,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays formation info" do
         expect do
-          described_class.new.invoke(:list_formation, [branch, pipeline], { json: true })
+          described_class.new.invoke(:list_formation, [], { branch: branch, pipeline: pipeline, json: true })
         end.to output("#{[{
           "id" => formation_id,
           "type" => "web",
@@ -658,7 +663,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:list_formation, [branch, ""], { json: true })
+          described_class.new.invoke(:list_formation, [], { branch: branch, pipeline: "", json: true })
         end.to output("Pipleline does not exists.\n").to_stderr
       end
     end
@@ -694,7 +699,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:list_formation, [branch, pipeline], { json: true })
+          described_class.new.invoke(:list_formation, [], { branch: branch, pipeline: pipeline, json: true })
         end.to output("Review app not exists.\n").to_stderr
       end
     end
@@ -774,7 +779,14 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "updates formation info" do
         expect do
-          described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, quantity: quantity })
+          described_class.new.invoke(
+            :update_formation, [], {
+              branch: branch,
+              pipeline: pipeline,
+              json: true,
+              quantity: quantity
+            }
+          )
         end.to output("#{{
           "id" => formation_id,
           "type" => formation_type,
@@ -789,7 +801,15 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
         it "updates formation with default quantity 1" do
           expect do
-            described_class.new.invoke(:update_formation, [branch, pipeline], { json: true })
+            described_class.new.invoke(
+              :update_formation,
+              [],
+              {
+                branch: branch,
+                pipeline: pipeline,
+                json: true
+              }
+            )
           end.to output("#{{
             "id" => formation_id,
             "type" => formation_type,
@@ -805,8 +825,17 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
         it "updates specified formation type" do
           expect do
-            described_class.new.invoke(:update_formation, [branch, pipeline],
-                                       { json: true, formation_type: formation_type, quantity: quantity })
+            described_class.new.invoke(
+              :update_formation,
+              [],
+              {
+                branch: branch,
+                pipeline: pipeline,
+                json: true,
+                formation_type: formation_type,
+                quantity: quantity
+              }
+            )
           end.to output("#{{
             "id" => formation_id,
             "type" => formation_type,
@@ -835,7 +864,8 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:update_formation, [branch, ""], { json: true, quantity: quantity })
+          described_class.new.invoke(:update_formation, [],
+                                     { branch: branch, pipeline: "", json: true, quantity: quantity })
         end.to output("Pipleline does not exists.\n").to_stderr
       end
     end
@@ -871,7 +901,8 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, quantity: quantity })
+          described_class.new.invoke(:update_formation, [],
+                                     { branch: branch, pipeline: pipeline, json: true, quantity: quantity })
         end.to output("Review app not exists.\n").to_stderr
       end
     end
@@ -930,7 +961,8 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
 
       it "displays a error message" do
         expect do
-          described_class.new.invoke(:update_formation, [branch, pipeline], { json: true, quantity: quantity })
+          described_class.new.invoke(:update_formation, [],
+                                     { branch: branch, pipeline: pipeline, json: true, quantity: quantity })
         end.to output("Formation not exists.\n").to_stderr
       end
     end
