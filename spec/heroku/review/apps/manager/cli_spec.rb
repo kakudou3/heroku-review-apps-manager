@@ -69,6 +69,173 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
     end
   end
 
+  describe "#show_app" do
+    let(:pipeline) { "sample-app" }
+    let(:branch) { "feature/add-sample" }
+    let(:heroku_api_token) { SecureRandom.hex(20) }
+    let(:app_id) { SecureRandom.uuid }
+    let(:app_name) { "dummy" }
+    let(:pr_number) { 10 }
+    let(:web_url) { "https://#{app_name}.heroku.com" }
+    let(:database_url) { "postgres://dummy_user:dummy_password@localhost:5432/dummy_db" }
+
+    before do
+      ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"] = heroku_api_token
+    end
+
+    context "when review app exists" do
+      before do
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: {
+                      "id" => app_id
+                    }.to_json)
+
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{app_id}/review-apps"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: [
+                      {
+                        "app": {
+                          "id" => app_id
+                        },
+                        "branch" => branch
+                      }
+                    ].to_json)
+
+        stub_request(
+          :get,
+          "https://api.heroku.com/apps/#{app_id}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(
+          status: 200,
+          headers: {
+            "Content-Type" => "application/json"
+          },
+          body: {
+            name: app_name,
+            web_url: web_url
+          }.to_json
+        )
+
+        stub_request(
+          :get,
+          "https://api.heroku.com/apps/#{app_id}/config-vars"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(
+          status: 200,
+          headers: {
+            "Content-Type" => "application/json"
+          },
+          body: {
+            "DATABASE_URL": database_url
+          }.to_json
+        )
+
+        @uri = URI.parse(database_url)
+      end
+
+      it "displays application info" do
+        result = {
+          url: web_url,
+          name: app_name,
+          db: {
+            host: @uri.host,
+            port: @uri.port,
+            name: @uri.path[1..],
+            user: @uri.user,
+            password: @uri.password
+          }
+        }.to_json
+        expect do
+          described_class.new.invoke(:show_app, [],
+                                     { branch: branch, pipeline: pipeline, json: true })
+        end.to output(/#{result}\n/).to_stdout
+      end
+    end
+
+    context "when pipeline does not exist" do
+      before do
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 404, headers: {
+                      "Content-Type" => "application/json"
+                    })
+      end
+
+      it "displays a error message" do
+        expect do
+          described_class.new.invoke(:show_app, [], { branch: branch, pipeline: "", json: true })
+        end.to output("Pipleline does not exists.\n").to_stderr
+      end
+    end
+
+    context "when review app does not exist" do
+      before do
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: {
+                      "id" => app_id
+                    }.to_json)
+
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{app_id}/review-apps"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 404, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: [].to_json)
+      end
+
+      it "displays a error message" do
+        expect do
+          described_class.new.invoke(:show_app, [], { branch: branch, pipeline: pipeline })
+        end.to output("Review app not exists.\n").to_stderr
+      end
+    end
+  end
+
   describe "#delete_app" do
     let(:pipeline) { "sample-app" }
     let(:branch) { "feature/add-sample" }

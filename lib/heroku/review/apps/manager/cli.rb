@@ -49,6 +49,63 @@ module Heroku
             end
           end
 
+          desc "show-app", "Show review app"
+          option :branch, type: :string, aliases: :b, required: true
+          option :pipeline, type: :string, aliases: :p, default: ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
+          option :json, type: :boolean, default: false
+          def show_app
+            branch = options[:branch]
+            pipeline_name = options[:pipeline]
+            platform_api = PlatformAPI.connect_oauth(ENV["HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY"])
+
+            begin
+              pipeline = platform_api.pipeline.info(pipeline_name)
+            rescue Excon::Error::NotFound
+              say_error "Pipleline does not exists.", Thor::Shell::Color::RED and return
+            end
+
+            begin
+              apps = platform_api.review_app.list(pipeline["id"])
+            rescue Excon::Error::NotFound
+              say_error "Review app not exists.", Thor::Shell::Color::RED and return
+            end
+
+            app = apps.filter { |app| app["branch"] == branch }.first
+
+            say_error "Review app not exists.", Thor::Shell::Color::RED and return if app.nil?
+
+            app_id = app["app"]["id"]
+            app_info = platform_api.app.info(app_id)
+
+            config_vars = platform_api.config_var.info_for_app(app_id)
+            database_url = config_vars["DATABASE_URL"]
+            uri = URI.parse(database_url)
+
+            if options[:json]
+              result = {
+                url: app_info["web_url"],
+                name: app_info["name"],
+                db: {
+                  host: uri.host,
+                  port: uri.port,
+                  name: uri.path[1..],
+                  user: uri.user,
+                  password: uri.password
+                }
+              }
+              output_as_json(result)
+            else
+              print_table([
+                            ["URL", "Name", "DB Host", "DB Port", "DB Name", "DB User",
+                             "DB Password", "DB Scheme"],
+                            [
+                              app_info["web_url"], app_info["name"], uri.host, uri.port, uri.path[1..], uri.user,
+                              uri.password, uri.scheme
+                            ]
+                          ])
+            end
+          end
+
           desc "delete-app", "Delete review app"
           option :branch, type: :string, aliases: :b, required: true
           option :pipeline, type: :string, aliases: :p, default: ENV["HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME"]
