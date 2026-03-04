@@ -36,7 +36,7 @@ $ heroku authorizations:create -d "Heroku Review Apps Manager Example Token"
 ```
 
 ```bash
-export HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY=your_heroku_api_key
+export HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY=your_heroku_oauth_token
 ```
 
 ### `HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN`
