@@ -28,7 +28,12 @@ This tool requires the following environment variables to be set:
 
 ### `HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY`
 
-Your Heroku API key for authentication. You can find your API key in your [Heroku Account Settings](https://dashboard.heroku.com/account).
+Your Heroku OAuth token for authentication. [You can create an OAuth token using the heroku-oauth toolbelt plugin.](https://github.com/heroku/platform-api?tab=readme-ov-file#a-real-world-example)
+
+```bash
+$ heroku plugins:install heroku-cli-oauth
+$ heroku authorizations:create -d "Heroku Review Apps Manager Example Token"
+```
 
 ```bash
 export HEROKU_REVIEW_APPS_MANAGER_HEROKU_API_KEY=your_heroku_api_key
@@ -152,6 +157,23 @@ Specify formation type:
 
 ```bash
 $ heroku-review-apps-manager update-formation --branch BRANCH [--pipeline PIPELINE_NAME] --quantity QUANTITY --formation-type worker
+```
+
+### Show a review app
+
+Show app and database connection info for a review app by branch:
+
+```bash
+$ heroku-review-apps-manager show-app --branch BRANCH [--pipeline PIPELINE_NAME]
+```
+
+The `--branch` option is required.
+The `--pipeline` option is optional. If not provided, it will use the value from the `HEROKU_REVIEW_APPS_MANAGER_PIPELINE_NAME` environment variable.
+
+With JSON output:
+
+```bash
+$ heroku-review-apps-manager show-app --branch BRANCH [--pipeline PIPELINE_NAME] --json
 ```
 
 ### Delete a review app
