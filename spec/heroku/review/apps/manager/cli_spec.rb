@@ -163,6 +163,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
           url: web_url,
           name: app_name,
           db: {
+            url: database_url,
             host: @uri.host,
             port: @uri.port,
             name: @uri.path[1..],
@@ -717,6 +718,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
           url: web_url,
           name: app_name,
           db: {
+            url: database_url,
             host: @uri.host,
             port: @uri.port,
             name: @uri.path[1..],
