@@ -86,6 +86,7 @@ module Heroku
                 url: app_info["web_url"],
                 name: app_info["name"],
                 db: {
+                  url: database_url,
                   host: uri.host,
                   port: uri.port,
                   name: uri.path[1..],
@@ -96,10 +97,11 @@ module Heroku
               output_as_json(result)
             else
               print_table([
-                            ["URL", "Name", "DB Host", "DB Port", "DB Name", "DB User",
+                            ["URL", "Name", "DB URL", "DB Host", "DB Port", "DB Name", "DB User",
                              "DB Password", "DB Scheme"],
                             [
-                              app_info["web_url"], app_info["name"], uri.host, uri.port, uri.path[1..], uri.user,
+                              app_info["web_url"], app_info["name"], database_url,
+                              uri.host, uri.port, uri.path[1..], uri.user,
                               uri.password, uri.scheme
                             ]
                           ])
@@ -226,6 +228,7 @@ module Heroku
                 url: app_info["web_url"],
                 name: app_info["name"],
                 db: {
+                  url: database_url,
                   host: uri.host,
                   port: uri.port,
                   name: uri.path[1..],
@@ -236,10 +239,11 @@ module Heroku
               output_as_json(result)
             else
               print_table([
-                            ["URL", "Name", "DB Host", "DB Port", "DB Name", "DB User",
+                            ["URL", "Name", "DB URL", "DB Host", "DB Port", "DB Name", "DB User",
                              "DB Password", "DB Scheme"],
                             [
-                              app_info["web_url"], app_info["name"], uri.host, uri.port, uri.path[1..], uri.user,
+                              app_info["web_url"], app_info["name"], database_url,
+                              uri.host, uri.port, uri.path[1..], uri.user,
                               uri.password, uri.scheme
                             ]
                           ])
