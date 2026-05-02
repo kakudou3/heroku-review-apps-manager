@@ -45,7 +45,7 @@ Your GitHub personal access token (required for creating review apps). You can c
 
 This tool requires the following repository permissions:
 
-- [Contents: Read and write](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#repository-permissions-for-contents)
+- [Contents: Read-only](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#repository-permissions-for-contents)
 - [Pull requests: Read-only](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens?apiVersion=2022-11-28#repository-permissions-for-pull-requests)
 
 ```bash
