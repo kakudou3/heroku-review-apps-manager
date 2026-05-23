@@ -1,11 +1,11 @@
 {
-  "minimumReleaseAge": "7 days"
-  "automerge": true,
-  "configMigration":: true,
-  "lockFileMaintenance": {
+  minimumReleaseAge: "7 days",
+  automerge: true,
+  configMigration: true,
+  lockFileMaintenance: {
     enabled: true,
   },
-  "major": {
+  major: {
     automerge: false,
   },
 }
