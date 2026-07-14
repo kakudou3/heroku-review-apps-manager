@@ -386,6 +386,52 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       ENV["HEROKU_REVIEW_APPS_MANAGER_GITHUB_TOKEN"] = "gh_token"
     end
 
+    context "when Pull Request does not exist" do
+      before do
+        org = repository.split("/").first
+        stub_request(
+          :get,
+          "https://api.heroku.com/pipelines/#{pipeline}"
+        ).with(
+          headers: {
+            "Accept" => "application/vnd.heroku+json; version=3",
+            "Authorization" => "Bearer #{heroku_api_token}"
+          }
+        ).to_return(status: 200, headers: {
+                      "Content-Type" => "application/json"
+                    }, body: {
+                      "id" => pipeline_id
+                    }.to_json)
+
+        stub_request(
+          :head,
+          "https://api.github.com/repos/#{repository}/tarball/#{ERB::Util.url_encode(branch)}"
+        ).to_return(status: 302, headers: {
+                      "Location" => "https://github-cloud.s3.amazonaws.com/fake.tar.gz"
+                    })
+
+        stub_request(
+          :get,
+          "https://api.github.com/repos/#{repository}/pulls"
+        ).with(
+          query: {
+            head: "#{org}:#{branch}",
+            state: "open"
+          }
+        ).to_return(
+          status: 200,
+          body: []
+        )
+      end
+
+      it "displays a error message" do
+        expect do
+          described_class.new.invoke(:create_app, [],
+                                     { branch: branch, pipeline: pipeline, repository: repository, json: true })
+        end.to output("Pull Request does not exist.\n").to_stderr
+      end
+    end
+
     context "when Review app exists" do
       before do
         org = repository.split("/").first
@@ -416,7 +462,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
         ).with(
           query: {
             head: "#{org}:#{branch}",
-            state: "all"
+            state: "open"
           }
         ).to_return(
           status: 200,
@@ -454,6 +500,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       let(:source_blob_url) do
         "https://github-cloud.s3.amazonaws.com/fake.tar.gz"
       end
+      let(:sha) { Digest::SHA256.hexdigest("test") }
       before do
         org = repository.split("/").first
         stub_request(
@@ -483,13 +530,16 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
         ).with(
           query: {
             head: "#{org}:#{branch}",
-            state: "all"
+            state: "open"
           }
         ).to_return(
           status: 200,
           body: [
             {
-              number: pr_number
+              number: pr_number,
+              head: {
+                sha: sha
+              }
             }
           ]
         )
@@ -518,7 +568,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
             pipeline: pipeline_id,
             source_blob: {
               url: source_blob_url,
-              version: "v1.0.0"
+              version: sha
             },
             pr_number: pr_number
           }.to_json
@@ -567,6 +617,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
       let(:app_name) { "dummy" }
       let(:web_url) { "https://#{app_name}.heroku.com" }
       let(:database_url) { "postgres://dummy_user:dummy_password@localhost:5432/dummy_db" }
+      let(:sha) { Digest::SHA256.hexdigest("test") }
       before do
         org = repository.split("/").first
         stub_request(
@@ -596,13 +647,16 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
         ).with(
           query: {
             head: "#{org}:#{branch}",
-            state: "all"
+            state: "open"
           }
         ).to_return(
           status: 200,
           body: [
             {
-              number: pr_number
+              number: pr_number,
+              head: {
+                sha: sha
+              }
             }
           ]
         )
@@ -631,7 +685,7 @@ RSpec.describe Heroku::Review::Apps::Manager::Cli do
             pipeline: pipeline_id,
             source_blob: {
               url: source_blob_url,
-              version: "v1.0.0"
+              version: sha
             },
             pr_number: pr_number
           }.to_json

@@ -170,10 +170,12 @@ module Heroku
 
             pull_requests = octokit.pull_requests(
               repository,
-              state: "all",
+              state: "open",
               head: "#{org}:#{branch}"
             )
             pull_request = pull_requests.first
+
+            say_error "Pull Request does not exist.", Thor::Shell::Color::YELLOW and return if pull_request.nil?
 
             apps = platform_api.review_app.list(pipeline_id)
             app = apps.filter { |app| app["branch"] == branch }.first
@@ -184,7 +186,7 @@ module Heroku
               review_app = platform_api.review_app.create(
                 branch: branch,
                 pipeline: pipeline_id,
-                source_blob: { url: github_archive_link, version: "v1.0.0" },
+                source_blob: { url: github_archive_link, version: pull_request[:head][:sha] },
                 pr_number: pull_request[:number]
               )
             rescue Excon::Error::Conflict
