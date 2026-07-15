@@ -166,8 +166,6 @@ module Heroku
             pipeline = platform_api.pipeline.info(pipeline_name)
             pipeline_id = pipeline["id"]
 
-            github_archive_link = octokit.archive_link(repository, ref: branch)
-
             pull_requests = octokit.pull_requests(
               repository,
               state: "open",
@@ -181,6 +179,8 @@ module Heroku
             app = apps.filter { |app| app["branch"] == branch }.first
 
             say_error "Review app already exists.", Thor::Shell::Color::YELLOW and return unless app.nil?
+
+            github_archive_link = octokit.archive_link(repository, ref: branch)
 
             begin
               review_app = platform_api.review_app.create(
