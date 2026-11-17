@@ -1,6 +1,8 @@
 {
-  extends: ["config:best-practices"],
-  minimumReleaseAge: "7 days",
+  extends: [
+    'config:best-practices',
+  ],
+  minimumReleaseAge: '7 days',
   automerge: true,
   platformAutomerge: true,
   configMigration: true,
@@ -10,5 +12,7 @@
   major: {
     automerge: false,
   },
-  dependencyDashboard: true,
+  dependencyDashboard: {
+    enabled: true,
+  },
 }
